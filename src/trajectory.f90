@@ -182,7 +182,11 @@ contains
         integer :: STAT = 0, I, N, J, NATOMS
 
         ! If the user specified how many frames to read and it is greater than one, use it
-        N = merge(F, 1, present(F))
+        if (present(F)) then
+            N = F
+        else
+            N = 1
+        endif
 
         ! Are we near the end of the file?
         N = min(this%FRAMES_REMAINING, N)
@@ -280,8 +284,13 @@ contains
                 &index group with read() or read_next().")
         end if
 
-        atom_tmp = merge(this%ndx%get(group, atom), atom, present(group))
-        natoms = merge(this%natoms(group), this%natoms(), present(group))
+        if (present(group)) then
+            atom_tmp = this%ndx%get(group, atom)
+            natoms = this%natoms(group)
+        else
+            atom_tmp = atom
+            natoms = this%natoms()
+        endif
 
         if (atom > natoms .or. atom < 1) then
             write(message, "(a,i0,a,i0,a)") "Tried to access atom number ", atom_tmp, " when there are ", &
@@ -305,7 +314,11 @@ contains
                 &index group with read() or read_next().")
         end if
 
-        trajectory_get_natoms = merge(this%ndx%get_natoms(group), this%NUMATOMS, present(group))
+        if (present(group)) then
+            trajectory_get_natoms = this%ndx%get_natoms(group)
+        else
+            trajectory_get_natoms = this%NUMATOMS
+        endif
 
     end function trajectory_get_natoms
 
